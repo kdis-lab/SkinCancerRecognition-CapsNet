@@ -1,1 +1,1 @@
-# InceptionV3Stem-CapsNet
+# SkinCancerRecognition-CapsNet

@@ -299,7 +299,7 @@ if __name__ == '__main__':
 	from Capsnet_model_inceptionV3 import Capsnet_sinpesos
 	
 	kfold(config_file, [
-		# 224x224
+		# 299x299
 		# clasico
 		Capsnet_sinpesos()		
 	])

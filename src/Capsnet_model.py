@@ -133,4 +133,4 @@ def model_sinpesos(img_width, img_height, n_class, x_all=None, y_all=None,
 	return model, model
 
 def Capsnet_sinpesos():
-	return {"model": model_sinpesos, "name": "Capsnet_sinpesos", "shape": (70, 70, 3)}
+	return {"model": model_sinpesos, "name": "Capsnet_sinpesos", "shape": (299, 299, 3)}

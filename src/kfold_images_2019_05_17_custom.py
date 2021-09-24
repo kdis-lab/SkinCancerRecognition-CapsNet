@@ -62,7 +62,6 @@ def remove(data, indices, batch):
 
 
 def one_fold(mapitems):
-	# ocupa la memoria gpu necesaria
 	from keras import backend as k
 	import tensorflow as tf
 	gpu = mapitems['gpu']
@@ -103,8 +102,6 @@ def one_fold(mapitems):
 		X = X[indices]
 		Y = Y[indices]
 		
-		# se eliminan instancias de la mayor clase para solucionar el bug de keras
-		# instancias de la clase mayoritaria							
 		nremove = remove(Y, [i for i in range(len(Y))], batch)
 		newtrain = [i for i in range(len(Y)) if i not in nremove]
 		shuffle_train = sklearn.utils.shuffle(newtrain)
@@ -119,14 +116,12 @@ def one_fold(mapitems):
 		X2_aug, Y2_aug, indices2 = image_aug_balance(X2,Y2,0)
 		print('test', X2.shape, 'aug', X2_aug.shape)
 		
-		#se convierte a categorical por capsnet
 		y_origin = numpy.copy(Y)
 		Y = to_categorical(Y.astype('float32'))
 		Y2 = to_categorical(Y2.astype('float32'))
 		Y2_aug = to_categorical(Y2_aug.astype('float32'))
 		
 		train_model, base_model = model['model'](img_width, img_height, NUM_CLASSES, X, Y, optimizer)
-		# emplea todas las gpu disponibles
 		from keras.utils import multi_gpu_model
 		parallel_model = train_model
 		
@@ -269,20 +264,6 @@ def kfold(config_file, models):
 									print('>> fold', fold, 'completed in', str(time.time() - start_time), 'seconds')
 									fold = fold + 1
 
-							final_evaluations = numpy.genfromtxt(join(dirpath, 'epochs-mean.txt'), delimiter=',',
-																 dtype=numpy.float64, names=True)
-							# evaluaciones de una metrica
-							metric_column = final_evaluations[metric]
-							# el indice de la fila donde esta la mejor metrica
-							row = metric_column.argmax() if metric_mode == 'max' else metric_column.argmin()
-
-							evaluation = final_evaluations[row]
-							summary = open(join(dirpath, 'summary.txt'), mode='w')
-							# leer las keys, las metricas
-							summary.write(','.join(final_evaluations.dtype.names))
-							summary.write('\n')
-							summary.write(','.join(map(str, evaluation)))
-							summary.close()
 
 							# delete dataset
 							del X
@@ -296,10 +277,14 @@ def kfold(config_file, models):
 
 if __name__ == '__main__':
 	config_file = str(sys.argv[1])
-	from Capsnet_model_inceptionV3 import Capsnet_sinpesos
+	from Capsnet_model_inceptionV3 import Capsnet_sinpesos as CI
+	from Capsnet_model_inceptionV3_stem import Capsnet_sinpesos as CS
+	from Capsnet_model_inceptionV3_stem import Capsnet_pretrained as CSP
 	
 	kfold(config_file, [
 		# 299x299
 		# clasico
-		Capsnet_sinpesos()		
+		CI(),
+		CS(),
+		CSP()
 	])

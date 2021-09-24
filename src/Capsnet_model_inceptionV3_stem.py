@@ -189,3 +189,52 @@ def model_sinpesos(img_width, img_height, n_class, x_all=None, y_all=None,
 
 def Capsnet_sinpesos():
 	return {"model": model_sinpesos, "name": "Capsnet_InceptionV3_stem_299x299", "shape": (299, 299, 3)}
+
+
+def model_pretrained(img_width, img_height, n_class, x_all=None, y_all=None,
+				   optimizer=None):
+	input_shape = np.asarray([img_height, img_width, 3])
+	n_routing = 1
+	
+	img_input = Input(shape=input_shape)
+
+	# inceptionv3
+	x = conv2d_bn(img_input, 32, 3, 3, strides=(2, 2), padding='valid')
+	x = conv2d_bn(x, 32, 3, 3, padding='valid')
+	x = conv2d_bn(x, 64, 3, 3)
+	x = layers.MaxPooling2D((3, 3), strides=(2, 2))(x)
+
+	x = conv2d_bn(x, 80, 1, 1, padding='valid')
+	x = conv2d_bn(x, 192, 3, 3, padding='valid')
+	x = layers.MaxPooling2D((3, 3), strides=(2, 2))(x)
+	
+	# capsnet
+	primary_capsule = PrimaryCapsule( n_vector=16, n_channel=32, n_kernel_size=9, n_stride=2)(x)
+
+	digit_capsule = CapsuleLayer( n_capsule=n_class, n_vec=64, n_routing=n_routing, name='digit_capsule')(primary_capsule)
+	output_capsule = LengthLayer(name='output_capsule')(digit_capsule)
+	
+	mask_input = Input(shape=(n_class, ))
+	mask = MaskingLayer()([digit_capsule, mask_input])  # two inputs
+	dec = Dense(512, activation='relu')(mask)
+	dec = Dense(1024, activation='relu')(dec)
+	# this layer depends of input shape
+	dec = Dense(np.prod(input_shape), activation='sigmoid')(dec)
+	dec = Reshape(input_shape)(dec)
+	
+	# this is the model we will train
+	model = Model([img_input, mask_input], [output_capsule, dec])
+
+	import requests
+	url = 'https://capsnetmelanoma.s3.eu-west-3.amazonaws.com/weights-0.20.hdf5'
+	r = requests.get(url, allow_redirects=True)
+	open('weights-0.20.hdf5', 'wb').write(r.content)
+
+	model.load_weights('weights-0.20.hdf5')
+	
+	print(model.summary())
+
+	return model, model
+
+def Capsnet_pretrained():
+	return {"model": model_sinpesos, "name": "Capsnet_InceptionV3_stem_pretrain_299x299", "shape": (299, 299, 3)}

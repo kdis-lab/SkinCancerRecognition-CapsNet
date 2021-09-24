@@ -167,9 +167,9 @@ def model_sinpesos(img_width, img_height, n_class, x_all=None, y_all=None,
 	x = layers.MaxPooling2D((3, 3), strides=(2, 2))(x)
 	
 	# capsnet
-	primary_capsule = PrimaryCapsule( n_vector=8, n_channel=32, n_kernel_size=9, n_stride=2)(x)
+	primary_capsule = PrimaryCapsule( n_vector=16, n_channel=32, n_kernel_size=9, n_stride=2)(x)
 
-	digit_capsule = CapsuleLayer( n_capsule=n_class, n_vec=16, n_routing=n_routing, name='digit_capsule')(primary_capsule)
+	digit_capsule = CapsuleLayer( n_capsule=n_class, n_vec=64, n_routing=n_routing, name='digit_capsule')(primary_capsule)
 	output_capsule = LengthLayer(name='output_capsule')(digit_capsule)
 	
 	mask_input = Input(shape=(n_class, ))

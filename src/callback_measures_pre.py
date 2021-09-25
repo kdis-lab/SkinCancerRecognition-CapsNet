@@ -94,26 +94,6 @@ class EpochsRegister(Callback):
 		file.write('epoch,')
 		file.write(','.join(self.keys))
 
-	def folds_mean(self):
-		# read from csv into record array
-		alldata = numpy.genfromtxt(self.filepath, delimiter=',', skip_header=1,
-								   dtype=numpy.float64)
-
-		num_epochs, num_evaluations = self.report_dimensions(self.filepath)
-
-		# capas(folds), filas(epochs), columnas(metricas)
-		alldata = numpy.reshape(alldata, newshape=(num_evaluations, num_epochs, 1 + len(self.keys)))
-
-		# promedia las capas, obteniendo una matrix de fila columna con el promedio
-		mean = numpy.nanmean(alldata, axis=0)
-
-		filemean = open(self.filepathmean, mode="w+")
-		self.prepare_headers(filemean, self.keys)
-		for row in mean:
-			filemean.write('\n')
-			filemean.write(','.join(map(str, row)))
-		filemean.close()
-
 	def report_dimensions(self, epochsfilepath):
 		alldata = numpy.genfromtxt(epochsfilepath, delimiter=',',
 								   dtype=numpy.float64, names=True)

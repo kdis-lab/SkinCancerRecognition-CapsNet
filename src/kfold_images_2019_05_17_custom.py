@@ -277,7 +277,7 @@ def kfold(config_file, models):
 
 if __name__ == '__main__':
 	config_file = str(sys.argv[1])
-	from Capsnet_model_inceptionV3 import Capsnet_sinpesos as CI
+	from Capsnet_model import Capsnet_sinpesos as CI
 	from Capsnet_model_inceptionV3_stem import Capsnet_sinpesos as CS
 	from Capsnet_model_inceptionV3_stem import Capsnet_pretrained as CSP
 	
